@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaScript GitHub Components Generator</title>
+    
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js"></script> 
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Anime.js -->
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Aquino&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f1f5f9;
+            --lighter: #ffffff;
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: var(--darker);
+            color: var(--lighter);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        /* Three.js Canvas */
+        #three-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        /* Header Styles */
+        header {
+            padding: 2rem 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .logo {
+            font-family: 'Aquino', sans-serif;
+            font-size: 2.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 5rem 0;
+            position: relative;
+            z-index: 5;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            color: var(--light);
+        }
+        
+        /* Form Styles */
+        .generator-form {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-control {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--lighter);
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+            border-color: var(--primary);
+        }
+        
+        /* Component Selection */
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .component-item {
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 15px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .component-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .component-item.selected {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.1);
+        }
+        
+        /* Results Section */
+        .results-section {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-top: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+        
+        .preview-container {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .code-container {
+            position: relative;
+            background: #1d1f21;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .code-content {
+            padding: 1.5rem;
+            overflow-x: auto;
+            color: #f8f8f2;
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: var(--secondary);
+        }
+        
+        /* Buttons */
+        .btn-aqua {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-aqua:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Animations */
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .component-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Three.js Background -->
+    <canvas id="three-canvas"></canvas>
+    
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="logo">AquaScript</div>
+                <div class="d-flex gap-3">
+                    <a href="#" class="btn btn-outline-light">Documentation</a>
+                    <a href="#" class="btn btn-aqua">GitHub</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="container">
+        <section class="hero">
+            <h1 data-aos="fade-down" data-aos-duration="1200">GitHub Components Generator</h1>
+            <p data-aos="fade-up" data-aos-duration="1200" data-aos-delay="200">Create beautiful, dynamic GitHub profile components with just your username. Select from various widgets, preview them, and copy the code instantly.</p>
+            
+            <div class="generator-form" data-aos="zoom-in" data-aos-duration="1200" data-aos-delay="400">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="username" class="form-label">GitHub Username</label>
+                            <input type="text" class="form-control" id="username" placeholder="Enter your GitHub username">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="theme" class="form-label">Theme</label>
+                            <select class="form-control" id="theme">
+                                <option value="light">Light</option>
+                                <option value="dark" selected>Dark</option>
+                                <option value="gradient">Gradient</option>
+                                <option value="aqua">Aqua</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4 mb-3">Select Components</h3>
+                
+                <div class="component-grid">
+                    <div class="component-item" data-component="stats">
+                        <h4><i class="fas fa-chart-bar me-2"></i> GitHub Stats</h4>
+                        <p class="small">Display your GitHub statistics</p>
+                    </div>
+                    
+                    <div class="component-item" data-component="languages">
+                        <h4><i class="fas fa-code me-2"></i> Top Languages</h4>
+                        <p class="small">Show your most used languages</p>
+                    </div>
+                    
+                    <div class="component-item" data-component="streak">
+                        <h4><i class="fas fa-fire me-2"></i> Streak Stats</h4>
+                        <p class="small">Your contribution streak</p>
+                    </div>
+                    
+                    <div class="component-item" data-component="trophies">
+                        <h4><i class="fas fa-trophy me-2"></i> GitHub Trophies</h4>
+                        <p class="small">Earned achievements</p>
+                    </div>
+                    
+                    <div class="component-item" data-component="snake">
+                        <h4><i class="fas fa-snake me-2"></i> Contribution Snake</h4>
+                        <p class="small">Animated contribution graph</p>
+                    </div>
+                    
+                    <div class="component-item" data-component="views">
+                        <h4><i class="fas fa-eye me-2"></i> Profile Views</h4>
+                        <p class="small">Profile view counter</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button id="generate-btn" class="btn-aqua pulse">
+                        <i class="fas fa-bolt me-2"></i> Generate Components
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <section class="results-section" id="results-section">
+            <h2 class="text-center mb-4">Your Generated Components</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Preview</h4>
+                    <div class="preview-container" id="preview">
+                        <p class="text-muted">Component preview will appear here</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4>Code</h4>
+                    <div class="code-container">
+                        <pre class="code-content" id="code-output">// Code will appear here</pre>
+                        <button class="copy-btn" id="copy-btn">
+                            <i class="fas fa-copy me-1"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <button class="btn-aqua" id="regenerate-btn">
+                    <i class="fas fa-sync me-2"></i> Regenerate
+                </button>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>Made with ❤️ by AquaScript | <a href="#" class="text-light">GitHub Repository</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize libraries
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS
+            AOS.init({
+                duration: 1200,
+                once: true
+            });
+            
+            // Initialize Lenis smooth scroll
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            });
+            
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            
+            requestAnimationFrame(raf);
+            
+            // Initialize Three.js
+            initThreeJS();
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+        
+        // Three.js initialization
+        function initThreeJS() {
+            const canvas = document.getElementById('three-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            // Create particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 2000;
+            
+            const posArray = new Float32Array(particlesCount * 3);
+            const colorArray = new Float32Array(particlesCount * 3);
+            
+            for (let i = 0; i < particlesCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 10;
+                colorArray[i] = Math.random();
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+            
+            // Particle material
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.05,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            // Create points system
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+            
+            camera.position.z = 5;
+            
+            // Mouse movement
+            let mouseX = 0;
+            let mouseY = 0;
+            
+            document.addEventListener('mousemove', (event) => {
+                mouseX = event.clientX / window.innerWidth;
+                mouseY = event.clientY / window.innerHeight;
+            });
+            
+            // Animation
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                particlesMesh.rotation.x += 0.0005;
+                particlesMesh.rotation.y += 0.001;
+                
+                // Move particles based on mouse position
+                particlesMesh.position.x = mouseX * 0.5 - 0.25;
+                particlesMesh.position.y = - (mouseY * 0.5 - 0.25);
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            const componentItems = document.querySelectorAll('.component-item');
+            const generateBtn = document.getElementById('generate-btn');
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const resultsSection = document.getElementById('results-section');
+            
+            let selectedComponents = [];
+            
+            // Component selection
+            componentItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    item.classList.toggle('selected');
+                    const component = item.getAttribute('data-component');
+                    
+                    if (selectedComponents.includes(component)) {
+                        selectedComponents = selectedComponents.filter(c => c !== component);
+                    } else {
+                        selectedComponents.push(component);
+                    }
+                });
+            });
+            
+            // Generate components
+            generateBtn.addEventListener('click', generateComponents);
+            regenerateBtn.addEventListener('click', generateComponents);
+            
+            // Copy code
+            copyBtn.addEventListener('click', () => {
+                const code = document.getElementById('code-output').textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    // Show success animation
+                    copyBtn.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy me-1"></i> Copy';
+                    }, 2000);
+                });
+            });
+            
+            // Generate components function
+            function generateComponents() {
+                const username = document.getElementById('username').value.trim();
+                const theme = document.getElementById('theme').value;
+                
+                if (!username) {
+                    anime({
+                        targets: '#username',
+                        translateX: [-10, 0, 10, 0],
+                        duration: 600,
+                        easing: 'easeInOutSine'
+                    });
+                    return;
+                }
+                
+                if (selectedComponents.length === 0) {
+                    anime({
+                        targets: '.component-item',
+                        translateY: [-10, 0, 10, 0],
+                        duration: 600,
+                        easing: 'easeInOutSine',
+                        delay: anime.stagger(100)
+                    });
+                    return;
+                }
+                
+                // Show loading animation
+                const preview = document.getElementById('preview');
+                preview.innerHTML = '<div class="text-center"><div class="spinner-border text-primary"></div><p class="mt-2">Generating components...</p></div>';
+                
+                // Show results section
+                resultsSection.style.display = 'block';
+                
+                // Simulate loading with timeout (in real app, this would fetch from APIs)
+                setTimeout(() => {
+                    // Generate component based on selection
+                    let componentHtml = '';
+                    let componentCode = '';
+                    
+                    // Based on the first selected component for demo purposes
+                    const firstComponent = selectedComponents[0];
+                    
+                    switch(firstComponent) {
+                        case 'stats':
+                            componentHtml = `<img src="https://github-readme-stats.vercel.app/api?username=${username}&show_icons=true&theme=${theme}" alt="${username}'s GitHub Stats" />`;
+                            componentCode = `[![${username}'s GitHub Stats](https://github-readme-stats.vercel.app/api?username=${username}&show_icons=true&theme=${theme})](https://github.com/${username})`;
+                            break;
+                        case 'languages':
+                            componentHtml = `<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=${username}&layout=compact&theme=${theme}" alt="${username}'s Top Languages" />`;
+                            componentCode = `[![${username}'s Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=${username}&layout=compact&theme=${theme})](https://github.com/${username})`;
+                            break;
+                        case 'streak':
+                            componentHtml = `<img src="https://streak-stats.demolab.com?user=${username}&theme=${theme}" alt="${username}'s Streak Stats" />`;
+                            componentCode = `[![${username}'s Streak Stats](https://streak-stats.demolab.com?user=${username}&theme=${theme})](https://github.com/${username})`;
+                            break;
+                        case 'trophies':
+                            componentHtml = `<img src="https://github-profile-trophy.vercel.app/?username=${username}&theme=${theme}&row=2&column=4" alt="${username}'s Trophies" />`;
+                            componentCode = `[![${username}'s Trophies](https://github-profile-trophy.vercel.app/?username=${username}&theme=${theme}&row=2&column=4)](https://github.com/${username})`;
+                            break;
+                        case 'snake':
+                            componentHtml = `<img src="https://github.com/${username}/${username}/blob/output/github-contribution-grid-snake.svg" alt="${username}'s Contribution Snake" />`;
+                            componentCode = `![${username}'s Contribution Snake](https://github.com/${username}/${username}/blob/output/github-contribution-grid-snake.svg)`;
+                            break;
+                        case 'views':
+                            componentHtml = `<img src="https://komarev.com/ghpvc/?username=${username}&color=blue&style=flat" alt="Profile Views" />`;
+                            componentCode = `![Profile Views](https://komarev.com/ghpvc/?username=${username}&color=blue&style=flat)`;
+                            break;
+                    }
+                    
+                    // Update preview and code
+                    preview.innerHTML = componentHtml;
+                    document.getElementById('code-output').textContent = componentCode;
+                    
+                    // Animate results
+                    anime({
+                        targets: '#preview, #code-output',
+                        opacity: [0, 1],
+                        translateY: [20, 0],
+                        duration: 1000,
+                        easing: 'easeOutQuad'
+                    });
+                }, 1500);
+            }
+        }
+    </script>
+</body>
+</html>
