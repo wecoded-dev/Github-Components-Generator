@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Progress Bar Generator</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Lenis CSS (not available, using smooth scroll alternative) -->
+    <style>
+        html.lenis { height: auto; }
+        .lenis.lenis-smooth { scroll-behavior: auto; }
+        .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+        .lenis.lenis-stopped { overflow: hidden; }
+        .lenis.lenis-scrolling iframe { pointer-events: none; }
+    </style>
+    
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --dark-color: #2d3436;
+            --light-color: #f5f6fa;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--light-color);
+            min-height: 100vh;
+            padding-bottom: 2rem;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            color: var(--light-color);
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background: rgba(255, 255, 255, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+        }
+        
+        .preview-container {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .progress {
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .progress-bar {
+            transition: width 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        
+        .form-range::-webkit-slider-thumb {
+            background: var(--primary-color);
+        }
+        
+        .form-range::-moz-range-thumb {
+            background: var(--primary-color);
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #5d4ae0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-outline-light {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-light:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .code-container {
+            background: #2d3436;
+            color: #f5f6fa;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .particles-js-canvas-el {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .floating-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+        }
+        
+        h2 {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 15px;
+            margin: 25px 0 20px 0;
+        }
+        
+        /* Animation classes */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .bounce {
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+        
+        .progress-bar-striped {
+            background-image: linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.15) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.15) 50%,
+                rgba(255, 255, 255, 0.15) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 1rem 1rem;
+        }
+        
+        .progress-bar-animated {
+            animation: progress-bar-stripes 1s linear infinite;
+        }
+        
+        @keyframes progress-bar-stripes {
+            0% { background-position-x: 1rem; }
+        }
+        
+        .glow {
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <!-- Particles Background -->
+    <div id="particles-js"></div>
+    
+    <div class="container py-5">
+        <header class="text-center mb-5" data-aos="fade-down">
+            <h1 class="display-4 fw-bold">Advanced Progress Bar Generator</h1>
+            <p class="lead">Create beautiful, animated progress bars with custom styles and effects</p>
+        </header>
+        
+        <div class="row">
+            <!-- Left Column - Controls -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg" data-aos="fade-right">
+                    <div class="card-header">
+                        <h3 class="mb-0">Customization</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Progress Value -->
+                        <div class="mb-4">
+                            <label class="floating-label">Progress Value: <span id="progressValue">50</span>%</label>
+                            <input type="range" class="form-range" id="progressRange" min="0" max="100" value="50">
+                        </div>
+                        
+                        <!-- Color Selection -->
+                        <div class="mb-4">
+                            <label class="floating-label">Color Theme</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-sm color-btn active" data-color="#6c5ce7" style="background-color: #6c5ce7;"></button>
+                                <button class="btn btn-sm color-btn" data-color="#00b894" style="background-color: #00b894;"></button>
+                                <button class="btn btn-sm color-btn" data-color="#fdcb6e" style="background-color: #fdcb6e;"></button>
+                                <button class="btn btn-sm color-btn" data-color="#d63031" style="background-color: #d63031;"></button>
+                                <button class="btn btn-sm color-btn" data-color="#0984e3" style="background-color: #0984e3;"></button>
+                                <button class="btn btn-sm color-btn" data-color="#fd79a8" style="background-color: #fd79a8;"></button>
+                                <button class="btn btn-sm color-btn" data-color="#00cec9" style="background-color: #00cec9;"></button>
+                                <button class="btn btn-sm color-btn" data-color="#a29bfe" style="background-color: #a29bfe;"></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Animation Effects -->
+                        <div class="mb-4">
+                            <label class="floating-label">Animation Effects</label>
+                            <select class="form-select" id="animationSelect">
+                                <option value="none">None</option>
+                                <option value="striped">Striped</option>
+                                <option value="pulse">Pulse</option>
+                                <option value="bounce">Bounce</option>
+                                <option value="glow">Glow</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Additional Options -->
+                        <div class="mb-4">
+                            <label class="floating-label">Additional Options</label>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="showPercentage">
+                                <label class="form-check-label" for="showPercentage">Show Percentage</label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="animatedStripes">
+                                <label class="form-check-label" for="animatedStripes">Animated Stripes</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="gradientFill">
+                                <label class="form-check-label" for="gradientFill">Gradient Fill</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Height Control -->
+                        <div class="mb-4">
+                            <label class="floating-label">Height: <span id="heightValue">30</span>px</label>
+                            <input type="range" class="form-range" id="heightRange" min="10" max="50" value="30">
+                        </div>
+                        
+                        <!-- Border Radius -->
+                        <div class="mb-4">
+                            <label class="floating-label">Border Radius: <span id="radiusValue">15</span>px</label>
+                            <input type="range" class="form-range" id="radiusRange" min="0" max="25" value="15">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column - Preview -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg" data-aos="fade-left">
+                    <div class="card-header">
+                        <h3 class="mb-0">Preview</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="preview-container">
+                            <div class="progress w-100" id="progressPreview">
+                                <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                            <button class="btn btn-outline-light me-md-2" id="testAnimationBtn">
+                                Test Animation
+                            </button>
+                            <button class="btn btn-primary" id="generateCodeBtn">
+                                Generate Code
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Code Output -->
+                <div class="card shadow-lg mt-4 d-none" id="codeOutputCard" data-aos="fade-up">
+                    <div class="card-header">
+                        <h3 class="mb-0">Generated Code</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="code-container">
+                            <pre id="generatedCode"></pre>
+                        </div>
+                        <button class="btn btn-outline-light mt-3" id="copyCodeBtn">
+                            Copy to Clipboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Particles JS -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
+    <!-- Anime JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Velocity JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/2.0.6/velocity.min.js"></script>
+    
+    <!-- Lenis JS (smooth scroll) -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    
+    <!-- Custom Script -->
+    <script>
+        // Initialize libraries
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS
+            AOS.init({
+                duration: 1000,
+                easing: 'ease-in-out',
+                once: true
+            });
+            
+            // Initialize particles.js
+            particlesJS('particles-js', {
+                particles: {
+                    number: { value: 80, density: { enable: true, value_area: 800 } },
+                    color: { value: "#ffffff" },
+                    shape: { type: "circle" },
+                    opacity: { value: 0.5, random: true },
+                    size: { value: 3, random: true },
+                    line_linked: {
+                        enable: true,
+                        distance: 150,
+                        color: "#ffffff",
+                        opacity: 0.4,
+                        width: 1
+                    },
+                    move: {
+                        enable: true,
+                        speed: 2,
+                        direction: "none",
+                        random: true,
+                        straight: false,
+                        out_mode: "out",
+                        bounce: false
+                    }
+                },
+                interactivity: {
+                    detect_on: "canvas",
+                    events: {
+                        onhover: { enable: true, mode: "repulse" },
+                        onclick: { enable: true, mode: "push" },
+                        resize: true
+                    }
+                },
+                retina_detect: true
+            });
+            
+            // Initialize Lenis smooth scrolling
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            });
+            
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            
+            requestAnimationFrame(raf);
+        });
+        
+        // Progress bar customization
+        const progressRange = document.getElementById('progressRange');
+        const progressValue = document.getElementById('progressValue');
+        const progressPreview = document.getElementById('progressPreview');
+        const progressBar = progressPreview.querySelector('.progress-bar');
+        const colorButtons = document.querySelectorAll('.color-btn');
+        const animationSelect = document.getElementById('animationSelect');
+        const showPercentage = document.getElementById('showPercentage');
+        const animatedStripes = document.getElementById('animatedStripes');
+        const gradientFill = document.getElementById('gradientFill');
+        const heightRange = document.getElementById('heightRange');
+        const heightValue = document.getElementById('heightValue');
+        const radiusRange = document.getElementById('radiusRange');
+        const radiusValue = document.getElementById('radiusValue');
+        const testAnimationBtn = document.getElementById('testAnimationBtn');
+        const generateCodeBtn = document.getElementById('generateCodeBtn');
+        const codeOutputCard = document.getElementById('codeOutputCard');
+        const generatedCode = document.getElementById('generatedCode');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        
+        // Update progress value
+        progressRange.addEventListener('input', function() {
+            const value = this.value;
+            progressValue.textContent = value;
+            progressBar.style.width = `${value}%`;
+            progressBar.setAttribute('aria-valuenow', value);
+            
+            if (showPercentage.checked) {
+                progressBar.textContent = `${value}%`;
+            }
+        });
+        
+        // Color selection
+        colorButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                colorButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const color = this.getAttribute('data-color');
+                progressBar.style.backgroundColor = color;
+                
+                // Add gradient if enabled
+                if (gradientFill.checked) {
+                    progressBar.style.backgroundImage = `linear-gradient(to right, ${color}, ${lightenColor(color, 30)})`;
+                }
+            });
+        });
+        
+        // Animation selection
+        animationSelect.addEventListener('change', function() {
+            // Remove all animation classes
+            progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated', 'pulse', 'bounce', 'glow');
+            
+            // Add selected animation class
+            if (this.value === 'striped') {
+                progressBar.classList.add('progress-bar-striped');
+                if (animatedStripes.checked) {
+                    progressBar.classList.add('progress-bar-animated');
+                }
+            } else if (this.value !== 'none') {
+                progressBar.classList.add(this.value);
+            }
+        });
+        
+        // Show percentage text
+        showPercentage.addEventListener('change', function() {
+            if (this.checked) {
+                progressBar.textContent = `${progressRange.value}%`;
+            } else {
+                progressBar.textContent = '';
+            }
+        });
+        
+        // Animated stripes
+        animatedStripes.addEventListener('change', function() {
+            if (this.checked && animationSelect.value === 'striped') {
+                progressBar.classList.add('progress-bar-animated');
+            } else {
+                progressBar.classList.remove('progress-bar-animated');
+            }
+        });
+        
+        // Gradient fill
+        gradientFill.addEventListener('change', function() {
+            const activeColor = document.querySelector('.color-btn.active').getAttribute('data-color');
+            
+            if (this.checked) {
+                progressBar.style.backgroundImage = `linear-gradient(to right, ${activeColor}, ${lightenColor(activeColor, 30)})`;
+            } else {
+                progressBar.style.backgroundImage = '';
+                progressBar.style.backgroundColor = activeColor;
+            }
+        });
+        
+        // Height control
+        heightRange.addEventListener('input', function() {
+            const value = this.value;
+            heightValue.textContent = value;
+            progressPreview.style.height = `${value}px`;
+        });
+        
+        // Border radius control
+        radiusRange.addEventListener('input', function() {
+            const value = this.value;
+            radiusValue.textContent = value;
+            progressPreview.style.borderRadius = `${value}px`;
+        });
+        
+        // Test animation button
+        testAnimationBtn.addEventListener('click', function() {
+            // Reset animation
+            progressBar.style.width = '0%';
+            if (showPercentage.checked) {
+                progressBar.textContent = '0%';
+            }
+            
+            // Animate to the selected value
+            setTimeout(() => {
+                const value = progressRange.value;
+                progressBar.style.width = `${value}%`;
+                if (showPercentage.checked) {
+                    let current = 0;
+                    const interval = setInterval(() => {
+                        if (current >= value) {
+                            clearInterval(interval);
+                        } else {
+                            current++;
+                            progressBar.textContent = `${current}%`;
+                        }
+                    }, 1500 / value);
+                }
+            }, 100);
+        });
+        
+        // Generate code button
+        generateCodeBtn.addEventListener('click', function() {
+            const activeColor = document.querySelector('.color-btn.active').getAttribute('data-color');
+            const animation = animationSelect.value;
+            const height = heightRange.value;
+            const radius = radiusRange.value;
+            const showPercent = showPercentage.checked;
+            const stripes = animatedStripes.checked;
+            const gradient = gradientFill.checked;
+            const progressValue = progressRange.value;
+            
+            // Generate CSS
+            let cssCode = `
+.progress {
+    height: ${height}px;
+    border-radius: ${radius}px;
+    overflow: hidden;
+    background-color: #e9ecef;
+}`;
+
+            let barStyle = `
+    background-color: ${activeColor};`;
+            
+            if (gradient) {
+                barStyle += `
+    background-image: linear-gradient(to right, ${activeColor}, ${lightenColor(activeColor, 30)});`;
+            }
+            
+            if (animation === 'striped') {
+                barStyle += `
+    background-image: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 1rem 1rem;`;
+                
+                if (stripes) {
+                    barStyle += `
+    animation: progress-bar-stripes 1s linear infinite;`;
+                }
+            }
+            
+            cssCode += `
+
+.progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: width 1.5s cubic-bezier(0.65, 0, 0.35, 1);` + barStyle + `
+}`;
+
+            if (animation === 'pulse') {
+                cssCode += `
+
+.progress-bar.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}`;
+            } else if (animation === 'bounce') {
+                cssCode += `
+
+.progress-bar.bounce {
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+    40% {transform: translateY(-10px);}
+    60% {transform: translateY(-5px);}
+}`;
+            } else if (animation === 'glow') {
+                cssCode += `
+
+.progress-bar.glow {
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 5px ${activeColor}; }
+    to { box-shadow: 0 0 20px ${activeColor}; }
+}`;
+            }
+
+            if (animation === 'striped' && stripes) {
+                cssCode += `
+
+@keyframes progress-bar-stripes {
+    0% { background-position-x: 1rem; }
+}`;
+            }
+            
+            // Generate HTML
+            const htmlCode = `
+<div class="progress">
+    <div class="progress-bar ${animation !== 'none' ? animation : ''}" role="progressbar" style="width: ${progressValue}%;" aria-valuenow="${progressValue}" aria-valuemin="0" aria-valuemax="100">
+        ${showPercent ? `${progressValue}%` : ''}
+    </div>
+</div>`;
+            
+            // Display the code
+            generatedCode.textContent = htmlCode + '\n\n<style>' + cssCode + '\n</style>';
+            codeOutputCard.classList.remove('d-none');
+            
+            // Scroll to code
+            const lenis = new Lenis();
+            lenis.scrollTo('#codeOutputCard', { offset: -20 });
+        });
+        
+        // Copy code button
+        copyCodeBtn.addEventListener('click', function() {
+            const textArea = document.createElement('textarea');
+            textArea.value = generatedCode.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // Show confirmation
+            const originalText = this.textContent;
+            this.textContent = 'Copied!';
+            this.classList.add('btn-success');
+            
+            setTimeout(() => {
+                this.textContent = originalText;
+                this.classList.remove('btn-success');
+            }, 2000);
+        });
+        
+        // Helper function to lighten colors
+        function lightenColor(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            
+            return '#' + (
+                0x1000000 +
+                (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+                (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+                (B < 255 ? (B < 1 ? 0 : B) : 255)
+            ).toString(16).slice(1);
+        }
+    </script>
+</body>
+</html>
